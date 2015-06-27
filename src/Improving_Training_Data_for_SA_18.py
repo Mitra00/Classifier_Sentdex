@@ -1,4 +1,3 @@
-
 import nltk
 import random
 from nltk.corpus import movie_reviews
@@ -13,8 +12,6 @@ from nltk.classify import ClassifierI
 from statistics import mode
 
 from nltk.tokenize import word_tokenize
-
-from nltk.corpus import stopwords
 
 
 class VoteClassifier(ClassifierI):
@@ -38,35 +35,22 @@ class VoteClassifier(ClassifierI):
         conf = choice_votes / len(votes)
         return conf
 
-#short_pos = open("stanford/testdata.csv","r").read()
-#short_neg = open("stanford/traindata-small.csv","r").read()
-short_pos = open("Stanford_5000/output_320_Copy.csv","r").read()
-short_neg = open("Stanford_5000/output_1_Copy.csv","r").read()
-#short_neg = open("stanford/traindata.csv","r").read()
+short_pos = open("short_reviews/positive.txt","r").read()
+short_neg = open("short_reviews/negative.txt","r").read()
 
 documents = []
 
 for r in short_pos.split('\n'):
-    documents.append((r, "pos"))
+    documents.append( (r, "pos") )
 
 for r in short_neg.split('\n'):
-    documents.append((r, "neg"))
+    documents.append( (r, "neg") )
 
 
 all_words = []
 
 short_pos_words = word_tokenize(short_pos)
 short_neg_words = word_tokenize(short_neg)
-
-#
-stop_words = set(stopwords.words("english"))
-
-for w in short_neg_words:
-    if w not in stop_words:
-        all_words.append(w)
-
-#print(all_words)
-#
 
 for w in short_pos_words:
     all_words.append(w.lower())
@@ -76,8 +60,7 @@ for w in short_neg_words:
 
 all_words = nltk.FreqDist(all_words)
 
-#word_features = list(all_words.keys())[:5000]
-word_features = list(all_words.keys())[:2500]
+word_features = list(all_words.keys())[:5000]
 
 def find_features(document):
     words = word_tokenize(document)
@@ -94,12 +77,9 @@ featuresets = [(find_features(rev), category) for (rev, category) in documents]
 random.shuffle(featuresets)
 
 # positive data example:
-#training_set = featuresets[:2250]
-#testing_set = featuresets[2250:]
-training_set = featuresets[:5000]
-testing_set = featuresets[5000:]
-#training_set = featuresets[:10000]
-#testing_set = featuresets[10000:]
+training_set = featuresets[:10000]
+testing_set = featuresets[10000:]
+
 ##
 ### negative data example:
 ##training_set = featuresets[100:]
@@ -138,7 +118,7 @@ NuSVC_classifier = SklearnClassifier(NuSVC())
 NuSVC_classifier.train(training_set)
 print("NuSVC_classifier accuracy percent:", (nltk.classify.accuracy(NuSVC_classifier, testing_set))*100)
 
-#
+
 voted_classifier = VoteClassifier(
                                   NuSVC_classifier,
                                   LinearSVC_classifier,
